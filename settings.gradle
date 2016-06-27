@@ -1,0 +1,3 @@
+rootProject.name = 'fast-rng-java'
+include 'fast-rng'
+include 'benchmark'
