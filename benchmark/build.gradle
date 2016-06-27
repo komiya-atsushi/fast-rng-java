@@ -1,0 +1,25 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
+plugins {
+    id 'java'
+    id 'me.champeau.gradle.jmh' version '0.3.0'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    jmh project(':fast-rng')
+}
+
+jmh {
+    fork = 3
+    humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt")
+    resultsFile = project.file("${project.buildDir}/reports/jmh/results.txt")
+    resultFormat = 'CSV'
+}
