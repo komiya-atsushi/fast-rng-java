@@ -52,3 +52,27 @@ publishing {
         }
     }
 }
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? bintrayUser : ''
+    key = project.hasProperty('bintrayKey') ? bintrayKey : ''
+    publications = ['maven']
+
+    pkg {
+        repo = 'maven'
+        name = 'fast-rng'
+        userOrg = 'komiya-atsushi'
+        licenses = ['Apache-2.0']
+
+        websiteUrl = 'https://github.com/komiya-atsushi/fast-rng-java'
+        issueTrackerUrl = 'https://github.com/komiya-atsushi/fast-rng-java/issues'
+        vcsUrl = 'https://github.com/komiya-atsushi/fast-rng-java.git'
+
+        version {
+            name = project.version
+            desc = 'fast-rng: Fast random number generator for various distributions'
+        }
+    }
+}
+
+createReleaseTag.dependsOn bintrayUpload
