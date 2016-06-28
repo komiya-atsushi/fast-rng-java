@@ -68,23 +68,21 @@ abstract class RNGTester {
 
         int failureCount = 0;
         for (int i = 0; i < NUM_TRIALS; i++) {
+            long beginMillis = System.currentTimeMillis();
             for (int j = 0; j < NUM_ITERATIONS; j++) {
                 double r = generateRandomValue(random);
 
-                int k;
-                for (k = 0; k < boundaries.length - 1; k++) {
-                    if (r < boundaries[k]) {
-                        break;
-                    }
-                }
-                observed[k]++;
+                int k = Arrays.binarySearch(boundaries, r);
+                observed[k < 0 ? ~k : k]++;
             }
+            long endMillis = System.currentTimeMillis();
 
             ChiSquareTest chiSquareTest = new ChiSquareTest();
             double chiSquare = chiSquareTest.chiSquare(expected, observed);
             double pValue = chiSquareTest.chiSquareTest(expected, observed);
 
-            String message = String.format("[%s] chi^2 = %.3f, p-value = %.5f", this.toString(), chiSquare, pValue);
+            String message = String.format("[%s] chi^2 = %.3f, p-value = %.5f, elapsedMillis = %d",
+                    this.toString(), chiSquare, pValue, endMillis - beginMillis);
             System.out.println(message);
 
             if (pValue < SIGNIFICANCE_LEVEL) {
