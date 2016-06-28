@@ -1,5 +1,7 @@
 # fast-rng: Fast random number generator for various distributions
 
+[![Download](https://api.bintray.com/packages/komiya-atsushi/maven/fast-rng/images/download.svg) ](https://bintray.com/komiya-atsushi/maven/fast-rng/_latestVersion)
+
 # Getting started
 
 ## Resolving artifacts using Maven
