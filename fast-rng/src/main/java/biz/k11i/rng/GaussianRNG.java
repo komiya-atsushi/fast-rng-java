@@ -2,6 +2,8 @@ package biz.k11i.rng;
 
 import java.util.Random;
 
+import static biz.k11i.rng.MathFunctions.log;
+
 /**
  * Gaussian random number generator.
  */
@@ -68,7 +70,7 @@ public interface GaussianRNG {
             double tn = r;
 
             for (int i = n - 2; i >= 1; i--) {
-                dn = Math.sqrt(-2.0 * Math.log(v / dn + f(dn)));
+                dn = Math.sqrt(-2.0 * log(v / dn + f(dn)));
 
                 k[i + 1] = (long) (Long.MAX_VALUE * dn / tn);
                 tn = dn;
@@ -99,8 +101,8 @@ public interface GaussianRNG {
                 if (i == 0) {
                     double _x, _y;
                     do {
-                        _x = -Math.log(random.nextDouble()) / R;
-                        _y = -Math.log(random.nextDouble());
+                        _x = -log(random.nextDouble()) / R;
+                        _y = -log(random.nextDouble());
 
                     } while (_y + _y < _x * _x);
                     return j > 0 ? R + _x : -(R + _x);

@@ -62,3 +62,17 @@ public class FastRngDemo {
 # License
 
 This software is licensed under the terms of the MIT license. See LICENSE.
+
+
+# Acknowledgments
+
+## commons-math3
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+https://github.com/apache/commons-math
+
+## Jafama
+
+This product includes software developed by Jeff Hain.
+https://github.com/jeffhain/jafama

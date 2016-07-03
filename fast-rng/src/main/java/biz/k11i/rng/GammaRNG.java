@@ -2,10 +2,10 @@ package biz.k11i.rng;
 
 import java.util.Random;
 
+import static biz.k11i.rng.MathFunctions.exp;
+import static biz.k11i.rng.MathFunctions.log;
+import static biz.k11i.rng.MathFunctions.pow;
 import static java.lang.Math.E;
-import static java.lang.Math.exp;
-import static java.lang.Math.log;
-import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
 /**
