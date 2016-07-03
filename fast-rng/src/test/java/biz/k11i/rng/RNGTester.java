@@ -57,7 +57,7 @@ abstract class RNGTester {
     void testGoodnessOfFit() {
         final double SIGNIFICANCE_LEVEL = 0.01;
         final int NUM_TRIALS = 10;
-        final int NUM_ITERATIONS = 20_000_000;
+        final int NUM_ITERATIONS = 2_000_000;
         final int ACCEPTABLE_FAILURE_COUNT = 2;
 
         double[] boundaries = calculateBoundaries();
