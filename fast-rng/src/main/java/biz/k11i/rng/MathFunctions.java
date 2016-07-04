@@ -22,15 +22,15 @@ package biz.k11i.rng;
  * </p>
  */
 final class MathFunctions {
-    static double log(double value) {
+    static final double log(double value) {
         return CommonsMath.log(value);
     }
 
-    static double exp(double value) {
+    static final double exp(double value) {
         return JafamaMath.exp(value);
     }
 
-    static double pow(double value, double power) {
+    static final double pow(double value, double power) {
         return JafamaMath.pow(value, power);
     }
 
@@ -1123,55 +1123,24 @@ final class MathFunctions {
         };
 
         /**
-         * Coefficients for log in the range of 1.0 < x < 1.0 + 2^-10.
-         */
-        private static final double LN_HI_PREC_COEF[][] = {
-                {1.0, -6.032174644509064E-23},
-                {-0.25, -0.25},
-                {0.3333333134651184, 1.9868161777724352E-8},
-                {-0.2499999701976776, -2.957007209750105E-8},
-                {0.19999954104423523, 1.5830993332061267E-10},
-                {-0.16624879837036133, -2.6033824355191673E-8}
-        };
-
-        /**
          * Natural logarithm.
          *
          * @param x a double
          * @return log(x)
          */
-        static double log(final double x) {
-            return log(x, null);
-        }
-
-        /**
-         * Internal helper method for natural logarithm function.
-         *
-         * @param x      original argument of the natural logarithm function
-         * @param hiPrec extra bits of precision on output (To Be Confirmed)
-         * @return log(x)
-         */
-        private static double log(final double x, final double[] hiPrec) {
+        static final double log(final double x) {
             if (x == 0) { // Handle special case of +0/-0
                 return Double.NEGATIVE_INFINITY;
             }
             long bits = Double.doubleToRawLongBits(x);
 
             /* Handle special cases of negative input, and NaN */
-            if (((bits & 0x8000000000000000L) != 0 || x != x) && x != 0.0) {
-                if (hiPrec != null) {
-                    hiPrec[0] = Double.NaN;
-                }
-
+            if ((bits & 0x8000000000000000L) != 0 || x != x) {
                 return Double.NaN;
             }
 
             /* Handle special cases of Positive infinity. */
             if (x == Double.POSITIVE_INFINITY) {
-                if (hiPrec != null) {
-                    hiPrec[0] = Double.POSITIVE_INFINITY;
-                }
-
                 return Double.POSITIVE_INFINITY;
             }
 
@@ -1179,16 +1148,6 @@ final class MathFunctions {
             int exp = (int) (bits >> 52) - 1023;
 
             if ((bits & 0x7ff0000000000000L) == 0) {
-                // Subnormal!
-                if (x == 0) {
-                    // Zero
-                    if (hiPrec != null) {
-                        hiPrec[0] = Double.NEGATIVE_INFINITY;
-                    }
-
-                    return Double.NEGATIVE_INFINITY;
-                }
-
                 /* Normalize the subnormal number. */
                 bits <<= 1;
                 while ((bits & 0x0010000000000000L) == 0) {
@@ -1198,13 +1157,13 @@ final class MathFunctions {
             }
 
 
-            if ((exp == -1 || exp == 0) && x < 1.01 && x > 0.99 && hiPrec == null) {
+            if ((exp == -1 || exp == 0) && x < 1.01 && x > 0.99) {
                 /* The normal method doesn't work well in the range [0.99, 1.01], so call do a straight
                 polynomial expansion in higer precision. */
 
                 /* Compute x - 1.0 and split it */
                 double xa = x - 1.0;
-                double xb = xa - x + 1.0;
+                double xb;
                 double tmp = xa * HEX_40000000;
                 double aa = xa + tmp - tmp;
                 double ab = xa - aa;
@@ -1254,62 +1213,15 @@ final class MathFunctions {
             double lnza = 0.0;
             double lnzb = 0.0;
 
-            if (hiPrec != null) {
-                /* split epsilon -> x */
-                double tmp = epsilon * HEX_40000000;
-                double aa = epsilon + tmp - tmp;
-                double ab = epsilon - aa;
-                double xa = aa;
-                double xb = ab;
-
-                /* Need a more accurate epsilon, so adjust the division. */
-                final double numer = bits & 0x3ffffffffffL;
-                final double denom = TWO_POWER_52 + (bits & 0x000ffc0000000000L);
-                aa = numer - xa * denom - xb * denom;
-                xb += aa / denom;
-
-                /* Remez polynomial evaluation */
-                final double[] lnCoef_last = LN_HI_PREC_COEF[LN_HI_PREC_COEF.length - 1];
-                double ya = lnCoef_last[0];
-                double yb = lnCoef_last[1];
-
-                for (int i = LN_HI_PREC_COEF.length - 2; i >= 0; i--) {
-                    /* Multiply a = y * x */
-                    aa = ya * xa;
-                    ab = ya * xb + yb * xa + yb * xb;
-                    /* split, so now y = a */
-                    tmp = aa * HEX_40000000;
-                    ya = aa + tmp - tmp;
-                    yb = aa - ya + ab;
-
-                    /* Add  a = y + lnHiPrecCoef */
-                    final double[] lnCoef_i = LN_HI_PREC_COEF[i];
-                    aa = ya + lnCoef_i[0];
-                    ab = yb + lnCoef_i[1];
-                    /* Split y = a */
-                    tmp = aa * HEX_40000000;
-                    ya = aa + tmp - tmp;
-                    yb = aa - ya + ab;
-                }
-
-                /* Multiply a = y * x */
-                aa = ya * xa;
-                ab = ya * xb + yb * xa + yb * xb;
-
-                /* split, so now lnz = a */
-                lnza = aa + ab;
-                lnzb = -(lnza - aa - ab);
-            } else {
-                /* High precision not required.  Eval Remez polynomial
-                using standard double precision */
-                lnza = -0.16624882440418567;
-                lnza = lnza * epsilon + 0.19999954120254515;
-                lnza = lnza * epsilon + -0.2499999997677497;
-                lnza = lnza * epsilon + 0.3333333333332802;
-                lnza = lnza * epsilon + -0.5;
-                lnza = lnza * epsilon + 1.0;
-                lnza *= epsilon;
-            }
+            /* High precision not required.  Eval Remez polynomial
+            using standard double precision */
+            lnza = -0.16624882440418567;
+            lnza = lnza * epsilon + 0.19999954120254515;
+            lnza = lnza * epsilon + -0.2499999997677497;
+            lnza = lnza * epsilon + 0.3333333333332802;
+            lnza = lnza * epsilon + -0.5;
+            lnza = lnza * epsilon + 1.0;
+            lnza *= epsilon;
 
             /* Relative sizes:
              * lnzb     [0, 2.33E-10]
@@ -1351,11 +1263,6 @@ final class MathFunctions {
             d = -(c - a - lnzb);
             a = c;
             b += d;
-
-            if (hiPrec != null) {
-                hiPrec[0] = a;
-                hiPrec[1] = b;
-            }
 
             return a + b;
         }
@@ -1478,7 +1385,7 @@ final class MathFunctions {
          * @param value A double value.
          * @return e^value.
          */
-        static double exp(double value) {
+        static final double exp(double value) {
             // exp(x) = exp([x])*exp(y)
             // with [x] the integer part of x, and y = x-[x]
             // ===>
@@ -1525,7 +1432,7 @@ final class MathFunctions {
          * @param value A double value.
          * @return Value logarithm (base e).
          */
-        static double log(double value) {
+        static final double log(double value) {
             if (value > 0.0) {
                 if (value == Double.POSITIVE_INFINITY) {
                     return Double.POSITIVE_INFINITY;
@@ -1594,7 +1501,7 @@ final class MathFunctions {
          * @param value A double value.
          * @return Logarithm (base e) of (1+value).
          */
-        static double log1p(double value) {
+        static final double log1p(double value) {
             if (value > -1.0) {
                 if (value == Double.POSITIVE_INFINITY) {
                     return Double.POSITIVE_INFINITY;
@@ -1651,7 +1558,7 @@ final class MathFunctions {
          * @param power A power.
          * @return value^power.
          */
-        static double pow(double value, double power) {
+        static final double pow(double value, double power) {
             if (power == 0.0) {
                 return 1.0;
             } else if (power == 1.0) {
@@ -1717,7 +1624,7 @@ final class MathFunctions {
         /**
          * @param power Must be in normal or subnormal values range.
          */
-        private static double twoPowNormalOrSubnormal(int power) {
+        private static final double twoPowNormalOrSubnormal(int power) {
             if (power <= -MAX_DOUBLE_EXPONENT) { // Not normal.
                 return Double.longBitsToDouble(0x0008000000000000L >> (-(power + MAX_DOUBLE_EXPONENT)));
             } else { // Normal.
@@ -1730,7 +1637,7 @@ final class MathFunctions {
          * to make sure is it small in case java.lang.Math
          * is directly used.
          */
-        private static int getTabSizePower(int tabSizePower) {
+        private static final int getTabSizePower(int tabSizePower) {
             return tabSizePower;
         }
 
@@ -1741,7 +1648,7 @@ final class MathFunctions {
          * @param power An int power.
          * @return 2^power as a double, or +-Infinity in case of overflow.
          */
-        private static double twoPow(int power) {
+        private static final double twoPow(int power) {
             if (power <= -MAX_DOUBLE_EXPONENT) { // Not normal.
                 if (power >= MIN_DOUBLE_EXPONENT) { // Subnormal.
                     return Double.longBitsToDouble(0x0008000000000000L >> (-(power + MAX_DOUBLE_EXPONENT)));
