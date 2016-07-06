@@ -62,7 +62,7 @@ bintray {
         repo = 'maven'
         name = 'fast-rng'
         userOrg = 'komiya-atsushi'
-        licenses = ['Apache-2.0']
+        licenses = ['MIT']
 
         websiteUrl = 'https://github.com/komiya-atsushi/fast-rng-java'
         issueTrackerUrl = 'https://github.com/komiya-atsushi/fast-rng-java/issues'
