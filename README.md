@@ -18,7 +18,7 @@
   <dependency>
     <groupId>biz.k11i</groupId>
     <artifactId>fast-rng</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
   </dependency>
 </dependencies>
 ```
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.0'
+    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.1'
 }
 ```
 
@@ -57,6 +57,12 @@ public class FastRngDemo {
     }
 }
 ```
+
+
+# Supported distributions
+
+- [Gaussian distribution (Normal distribution)](https://en.wikipedia.org/wiki/Normal_distribution)
+- [Gamma distribution](https://en.wikipedia.org/wiki/Gamma_distribution)
 
 
 # License
