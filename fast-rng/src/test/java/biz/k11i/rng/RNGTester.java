@@ -68,6 +68,8 @@ abstract class RNGTester {
 
         int failureCount = 0;
         for (int i = 0; i < NUM_TRIALS; i++) {
+            Arrays.fill(observed, 0);
+
             long beginMillis = System.currentTimeMillis();
             for (int j = 0; j < NUM_ITERATIONS; j++) {
                 double r = generateRandomValue(random);
