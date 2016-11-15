@@ -8,8 +8,10 @@ import java.util.Random;
 
 public class GaussianRNGTest {
     private static class GaussianRNGTester extends RNGTester {
-        GaussianRNGTester(int numBins) {
+        private final GaussianRNG rng;
+        GaussianRNGTester(GaussianRNG rng, int numBins) {
             super(numBins);
+            this.rng = rng;
         }
 
         @Override
@@ -19,7 +21,7 @@ public class GaussianRNGTest {
 
         @Override
         double generateRandomValue(Random random) {
-            return GaussianRNG.FAST_RNG.generate(random);
+            return rng.generate(random);
         }
 
         @Override
@@ -29,8 +31,14 @@ public class GaussianRNGTest {
     }
 
     @Test
-    public void testGoodnessOfFit() {
+    public void testGoodnessOfFit_fast() {
         final int numBins = 200;
-        new GaussianRNGTester(numBins).testGoodnessOfFit();
+        new GaussianRNGTester(GaussianRNG.FAST_RNG, numBins).testGoodnessOfFit();
+    }
+
+    @Test
+    public void testGoodnessOfFit_general() {
+        final int numBins = 200;
+        new GaussianRNGTester(GaussianRNG.GENERAL_RNG, numBins).testGoodnessOfFit();
     }
 }

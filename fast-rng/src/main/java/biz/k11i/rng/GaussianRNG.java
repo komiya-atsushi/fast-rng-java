@@ -2,13 +2,15 @@ package biz.k11i.rng;
 
 import java.util.Random;
 
+import static biz.k11i.rng.MathFunctions.exp;
 import static biz.k11i.rng.MathFunctions.log;
 
 /**
  * Gaussian random number generator.
  */
 public interface GaussianRNG {
-    GaussianRNG FAST_RNG = ZigguratRNG.Z_256;
+    GaussianRNG FAST_RNG = ZigguratFast.Z_256;
+    GaussianRNG GENERAL_RNG = ZigguratGeneral.Z_256;
 
     /**
      * Generates a random value sampled from gaussian distribution (normal distribution).
@@ -18,6 +20,23 @@ public interface GaussianRNG {
      */
     double generate(Random random);
 
+    abstract class ZigguratBase {
+        static double f(double x) {
+            // f(x) = e^{-x^2 / 2}
+            return exp(-0.5 * x * x);
+        }
+
+        static double tail(Random random, double r) {
+            double _x, _y;
+            do {
+                _x = -log(random.nextDouble()) / r;
+                _y = -log(random.nextDouble());
+
+            } while (_y + _y < _x * _x);
+            return r + _x;
+        }
+    }
+
     /**
      * Implementation of Gaussian random number generator using Ziggurat algorithm.
      * <p>
@@ -25,99 +44,183 @@ public interface GaussianRNG {
      * <i>"The ziggurat method for generating random variables."</i>
      * Journal of statistical software 5.8 (2000): 1-7.
      * </p>
+     * <p>
+     * This implementation assumes that the values returned from {@link Random#nextLong()}
+     * have the independence of each bit.
+     * </p>
      */
-    class ZigguratRNG implements GaussianRNG {
-        private static final ZigguratRNG Z_256 = new ZigguratRNG(256, 3.6541528853610088, 0.00492867323399);
+    class ZigguratFast extends ZigguratBase implements GaussianRNG {
+        private static final ZigguratFast Z_256 = new ZigguratFast(8, 3.6541528853610088, 0.00492867323399);
 
-        private final int INDEX_BITMASK;
         private final int N;
         private final double R;
         private final double V;
+        private final int INDEX_RIGHT_SHIFT_BITS;
+        private final long SIGN_BIT_MASK;
+        private final long U_BIT_MASK;
+        private final int TAIL_INDEX;
 
-        private long[] k;
-        private double[] w;
-        private double[] f;
+        private final long[] k;
+        private final double[] w;
+        private final double[] f;
 
         /**
-         * Constructs {@link ZigguratRNG} with parameters.
+         * Constructs {@link ZigguratFast} with parameters.
          *
-         * @param n number of rectangles (assume that n is power of 2)
-         * @param r rightmost x_i
-         * @param v area of the rectangle
+         * @param nBits number of rectangles (2^nBits)
+         * @param r     rightmost x_i
+         * @param v     area of the rectangle
          */
-        ZigguratRNG(int n, double r, double v) {
-            INDEX_BITMASK = n - 1;
-            N = n;
+        ZigguratFast(int nBits, double r, double v) {
+            N = 1 << nBits;
             R = r;
             V = v;
+            INDEX_RIGHT_SHIFT_BITS = 64 - nBits;
+            SIGN_BIT_MASK = 1L << (64 - nBits - 1);
+            U_BIT_MASK = (1L << (64 - nBits - 1)) - 1;
+            TAIL_INDEX = N - 1;
 
-            k = new long[n];
-            w = new double[n];
-            f = new double[n];
+            k = new long[N];
+            w = new double[N];
+            f = new double[N];
 
             double fr = f(r);
+            long b = 1L << (64 - 8 - 1);
 
-            k[0] = (long) (Long.MAX_VALUE * r * fr / v);
-            k[1] = 0;
+            w[N - 1] = v * exp(0.5 * r * r) / b;
+            w[N - 2] = r / b;
+            k[N - 1] = (long) Math.floor(r / w[N - 1]);
+            f[N - 1] = fr;
 
-            w[0] = v / fr / Long.MAX_VALUE;
-            w[n - 1] = r / Long.MAX_VALUE;
+            double x = r;
 
-            f[0] = 1.0;
-            f[n - 1] = fr;
-
-            double dn = r;
-            double tn = r;
-
-            for (int i = n - 2; i >= 1; i--) {
-                dn = Math.sqrt(-2.0 * log(v / dn + f(dn)));
-
-                k[i + 1] = (long) (Long.MAX_VALUE * dn / tn);
-                tn = dn;
-
-                w[i] = dn / Long.MAX_VALUE;
-                f[i] = f(dn);
+            for (int i = N - 2; i >= 1; i--) {
+                x = Math.sqrt(-2.0 * log(f(x) + v / x));
+                w[i - 1] = x / b;
+                k[i] = (long) Math.floor(x / w[i]);
+                f[i] = f(x);
             }
-        }
 
-        private double f(double x) {
-            // f(x) = e^{-x^2 / 2}
-            return Math.exp(-0.5 * x * x);
+            k[0] = 0;
+            f[0] = 1;
         }
 
         public double generate(Random random) {
             while (true) {
-                long j = random.nextLong();
-                if (j == Long.MIN_VALUE) {
-                    continue;
+                long u = random.nextLong();
+                int i = (int) (u >>> INDEX_RIGHT_SHIFT_BITS);
+                int sign = (u & SIGN_BIT_MASK) == 0 ? 1 : -1;
+                u &= U_BIT_MASK;
+
+                if (u < k[i]) {
+                    return sign * u * w[i];
                 }
 
-                int i = (int) (j & INDEX_BITMASK);
-
-                if (Math.abs(j) < k[i]) {
-                    return j * w[i];
+                if (i == TAIL_INDEX) {
+                    return sign * tail(random, R);
                 }
 
-                if (i == 0) {
-                    double _x, _y;
-                    do {
-                        _x = -log(random.nextDouble()) / R;
-                        _y = -log(random.nextDouble());
-
-                    } while (_y + _y < _x * _x);
-                    return j > 0 ? R + _x : -(R + _x);
-                }
-
-                double x = j * w[i];
-                if ((f[i - 1] - f[i]) * random.nextDouble() < f(x) - f[i]) {
-                    return x;
+                double x = u * w[i];
+                if (random.nextDouble() * (f[i] - f[i + 1]) <= f(x) - f[i + 1]) {
+                    return sign * x;
                 }
             }
         }
 
         @Override
         public String toString() {
-            return String.format("ZigguratRNG(N = %d, R = %f, V = %f)", N, R, V);
+            return String.format("ZigguratFast(N = %d, R = %f, V = %f)", N, R, V);
+        }
+    }
+
+    /**
+     * Implementation of Gaussian random number generator using Ziggurat algorithm.
+     * <p>
+     * Marsaglia, George, and Wai Wan Tsang.
+     * <i>"The ziggurat method for generating random variables."</i>
+     * Journal of statistical software 5.8 (2000): 1-7.
+     * </p>
+     * <p>
+     * This implementation is a bit slower than {@link ZigguratFast}
+     * but it does not require the independence of each bit to the values returned from {@link Random#nextLong()}.
+     * </p>
+     */
+    class ZigguratGeneral extends ZigguratBase implements GaussianRNG {
+        private static final ZigguratGeneral Z_256 = new ZigguratGeneral(8, 3.6541528853610088, 0.00492867323399);
+
+        private final int N;
+        private final double R;
+        private final double V;
+        private final int INDEX_BIT_MASK;
+        private final int TAIL_INDEX;
+
+        private final double[] x;
+        private final double[] xx;
+        private final double[] t;
+
+        /**
+         * Constructs {@link ZigguratGeneral} with parameters.
+         *
+         * @param nBits number of rectangles (2^nBits)
+         * @param r     rightmost x_i
+         * @param v     area of the rectangle
+         */
+        ZigguratGeneral(int nBits, double r, double v) {
+            N = 1 << nBits;
+            R = r;
+            V = v;
+            INDEX_BIT_MASK = N - 1;
+            TAIL_INDEX = N - 1;
+
+            x = new double[N + 1];
+            xx = new double[N + 1];
+            t = new double[N];
+
+            x[N] = v * exp(0.5 * r * r);
+            x[N - 1] = r;
+
+            for (int i = N - 2; i >= 1; i--) {
+                x[i] = Math.sqrt(-2.0 * log(f(x[i + 1]) + v / x[i + 1]));
+            }
+            x[0] = 0;
+
+            for (int i = 0; i < t.length; i++) {
+                t[i] = x[i] / x[i + 1];
+            }
+
+            for (int i = 0; i < x.length; i++) {
+                xx[i] = x[i] * x[i];
+            }
+        }
+
+        @Override
+        public double generate(Random random) {
+            while (true) {
+                int i = random.nextInt() & INDEX_BIT_MASK;
+
+                double u1 = 2 * random.nextDouble() - 1;
+                if (Math.abs(u1) < t[i]) {
+                    return u1 * x[i + 1];
+                }
+
+                if (i == TAIL_INDEX) {
+                    return Math.signum(u1) * tail(random, R);
+                }
+
+                double y = u1 * x[i + 1];
+                double yy = y * y;
+                double gU = exp(-0.5 * (xx[i] - yy));
+                double gL = exp(-0.5 * (xx[i + 1] - yy));
+
+                if (random.nextDouble() * (gU - gL) <= 1 - gL) {
+                    return y;
+                }
+            }
+        }
+
+        @Override
+        public String toString() {
+            return String.format("ZigguratGeneral(N = %d, R = %f, V = %f)", N, R, V);
         }
     }
 }
