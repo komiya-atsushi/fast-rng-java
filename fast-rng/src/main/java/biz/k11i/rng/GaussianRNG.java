@@ -2,8 +2,8 @@ package biz.k11i.rng;
 
 import java.util.Random;
 
-import static biz.k11i.rng.MathFunctions.exp;
-import static biz.k11i.rng.MathFunctions.log;
+import static biz.k11i.util.MathFunctions.exp;
+import static biz.k11i.util.MathFunctions.log;
 
 /**
  * Gaussian random number generator.

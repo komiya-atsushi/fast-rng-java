@@ -1,4 +1,4 @@
-package biz.k11i.rng;
+package biz.k11i.util;
 
 /**
  * Faster implementation of math functions.
@@ -21,16 +21,16 @@ package biz.k11i.rng;
  * </ul>
  * </p>
  */
-final class MathFunctions {
-    static final double log(double value) {
+public final class MathFunctions {
+    public static final double log(double value) {
         return CommonsMath.log(value);
     }
 
-    static final double exp(double value) {
+    public static final double exp(double value) {
         return JafamaMath.exp(value);
     }
 
-    static final double pow(double value, double power) {
+    public static final double pow(double value, double power) {
         return JafamaMath.pow(value, power);
     }
 
