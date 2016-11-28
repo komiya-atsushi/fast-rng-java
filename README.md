@@ -82,3 +82,19 @@ https://github.com/apache/commons-math
 
 This product includes software developed by Jeff Hain.
 https://github.com/jeffhain/jafama
+
+
+# References
+
+- Tesuaki Yotsuji.
+  *計算機シミュレーションのための確率分布乱数生成法.*
+  Pleiades Publishing Co.,Ltd. (2010)
+- Marsaglia, George, and Wai Wan Tsang.
+  *The ziggurat method for generating random variables.*
+  Journal of statistical software 5.8 (2000): 1-7.
+- Ahrens, Joachim H., and Ulrich Dieter.
+  *Computer methods for sampling from gamma, beta, poisson and bionomial distributions.*
+  Computing 12.3 (1974): 223-246.
+- Marsaglia, George, and Wai Wan Tsang.
+  *A simple method for generating gamma variables.*
+  ACM Transactions on Mathematical Software (TOMS) 26.3 (2000): 363-372.

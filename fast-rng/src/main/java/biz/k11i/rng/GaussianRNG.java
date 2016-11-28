@@ -45,6 +45,10 @@ public interface GaussianRNG {
      * Journal of statistical software 5.8 (2000): 1-7.
      * </p>
      * <p>
+     * Tesuaki Yotsuji. <i>計算機シミュレーションのための確率分布乱数生成法.</i>
+     * Pleiades PUBLISHING Co.,Ltd. (2010)
+     * </p>
+     * <p>
      * This implementation assumes that the values returned from {@link Random#nextLong()}
      * have the independence of each bit.
      * </p>
@@ -139,6 +143,10 @@ public interface GaussianRNG {
      * Marsaglia, George, and Wai Wan Tsang.
      * <i>"The ziggurat method for generating random variables."</i>
      * Journal of statistical software 5.8 (2000): 1-7.
+     * </p>
+     * <p>
+     * Tesuaki Yotsuji. <i>計算機シミュレーションのための確率分布乱数生成法.</i>
+     * Pleiades PUBLISHING Co.,Ltd. (2010)
      * </p>
      * <p>
      * This implementation is a bit slower than {@link ZigguratFast}
