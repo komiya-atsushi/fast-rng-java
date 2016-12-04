@@ -19,7 +19,6 @@ package biz.k11i.util;
  * </ul>
  * </li>
  * </ul>
- * </p>
  */
 public final class MathFunctions {
     public static final double log(double value) {
