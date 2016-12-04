@@ -9,7 +9,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @State(Scope.Thread)
 public class GaussianBenchmark {
-    private Random javaUtilRandom = new Random();
+    private static Random javaUtilRandom = new Random();
 
     @Benchmark
     public double javaUtilRandom() {
@@ -22,7 +22,22 @@ public class GaussianBenchmark {
     }
 
     @Benchmark
-    public double fastRng() {
+    public double fastRngWithThreadLocalRandom() {
         return GaussianRNG.FAST_RNG.generate(ThreadLocalRandom.current());
+    }
+
+    @Benchmark
+    public double fastRngWithJavaUtilRandom() {
+        return GaussianRNG.FAST_RNG.generate(javaUtilRandom);
+    }
+
+    @Benchmark
+    public double generalRngWithThreadLocalRandom() {
+        return GaussianRNG.GENERAL_RNG.generate(ThreadLocalRandom.current());
+    }
+
+    @Benchmark
+    public double generalRngWithJavaUtilRandom() {
+        return GaussianRNG.GENERAL_RNG.generate(javaUtilRandom);
     }
 }

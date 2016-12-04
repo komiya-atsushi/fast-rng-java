@@ -22,4 +22,5 @@ jmh {
     humanOutputFile = project.file("${project.buildDir}/reports/jmh/human.txt")
     resultsFile = project.file("${project.buildDir}/reports/jmh/results.txt")
     resultFormat = 'CSV'
+    // threads = 100
 }
