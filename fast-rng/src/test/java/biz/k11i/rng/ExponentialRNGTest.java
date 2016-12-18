@@ -14,15 +14,15 @@ public class ExponentialRNGTest {
     private static final int N = 2_000_000;
     private static final int K = 20;
 
-    private void testGoodnessOfFitByTwoLevelTesting(final ExponentialRNG exponentialRNG, final double lambda) {
+    private void testGoodnessOfFitByTwoLevelTesting(final ExponentialRNG exponentialRNG, final double theta) {
         TwoLevelTester tester = new TwoLevelTester(N, K);
         TwoLevelTester.RealRng rng = new TwoLevelTester.RealRng() {
             @Override
             public double generate(Random random) {
-                return exponentialRNG.generate(random, lambda);
+                return exponentialRNG.generate(random, theta);
             }
         };
-        ExponentialDistribution distribution = new ExponentialDistribution(lambda);
+        ExponentialDistribution distribution = new ExponentialDistribution(theta);
         tester.test(rng, distribution);
     }
 
@@ -30,12 +30,12 @@ public class ExponentialRNGTest {
     public static final double[] theta = {0.01, 1.0, 100.0};
 
     @Theory
-    public void testGoodnessOfFit_fast(double lambda) {
-        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.FAST_RNG, lambda);
+    public void testGoodnessOfFit_fast(double theta) {
+        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.FAST_RNG, theta);
     }
 
     @Theory
-    public void testGoodnessOfFit_general(double lambda) {
-        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.GENERAL_RNG, lambda);
+    public void testGoodnessOfFit_general(double theta) {
+        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.GENERAL_RNG, theta);
     }
 }
