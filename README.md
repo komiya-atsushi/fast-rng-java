@@ -12,13 +12,13 @@
     <id>bintray-komiya-atsushi-maven</id>
     <url>http://dl.bintray.com/komiya-atsushi/maven</url>
   </repository>
-</repository>
+</repositories>
 
 <dependencies>
   <dependency>
     <groupId>biz.k11i</groupId>
     <artifactId>fast-rng</artifactId>
-    <version>0.1.1</version>
+    <version>0.1.3</version>
   </dependency>
 </dependencies>
 ```
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.1'
+    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.3'
 }
 ```
 
