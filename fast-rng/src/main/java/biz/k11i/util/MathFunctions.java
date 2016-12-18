@@ -15,6 +15,7 @@ package biz.k11i.util;
  * Jafama
  * <ul>
  * <li>{@link #exp(double)}</li>
+ * <li>{@link #log1p(double)}</li>
  * <li>{@link #pow(double, double)}</li>
  * </ul>
  * </li>
@@ -23,6 +24,10 @@ package biz.k11i.util;
 public final class MathFunctions {
     public static final double log(double value) {
         return CommonsMath.log(value);
+    }
+
+    public static final double log1p(double value) {
+        return JafamaMath.log1p(value);
     }
 
     public static final double exp(double value) {
