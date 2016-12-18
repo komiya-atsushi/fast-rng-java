@@ -62,6 +62,7 @@ public class FastRngDemo {
 # Supported distributions
 
 - [Gaussian distribution (Normal distribution)](https://en.wikipedia.org/wiki/Normal_distribution)
+- [Exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution)
 - [Gamma distribution](https://en.wikipedia.org/wiki/Gamma_distribution)
 
 
