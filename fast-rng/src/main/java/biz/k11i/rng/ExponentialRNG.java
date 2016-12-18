@@ -44,7 +44,7 @@ public interface ExponentialRNG {
 
         @Override
         public double generate(Random random, double theta) {
-            return generate(random, 0);
+            return theta * generate(random, 0);
         }
 
         abstract double generate(Random random, int recursionCount);
