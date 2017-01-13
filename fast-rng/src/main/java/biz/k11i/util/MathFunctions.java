@@ -15,6 +15,7 @@ package biz.k11i.util;
  * Jafama
  * <ul>
  * <li>{@link #exp(double)}</li>
+ * <li>{@link #expm1(double)}</li>
  * <li>{@link #log1p(double)}</li>
  * <li>{@link #pow(double, double)}</li>
  * </ul>
@@ -32,6 +33,10 @@ public final class MathFunctions {
 
     public static final double exp(double value) {
         return JafamaMath.exp(value);
+    }
+
+    public static final double expm1(double value) {
+        return JafamaMath.expm1(value);
     }
 
     public static final double pow(double value, double power) {
@@ -1430,6 +1435,34 @@ public final class MathFunctions {
             final double loTerm = expZ * expEps;
 
             return hiTerm * loTerm;
+        }
+
+        /**
+         * Much more accurate than exp(value)-1,
+         * for arguments (and results) close to zero.
+         *
+         * @param value A double value.
+         * @return e^value-1.
+         */
+        public static double expm1(double value) {
+            // If value is far from zero, we use exp(value)-1.
+            //
+            // If value is close to zero, we use the following formula:
+            // exp(value)-1
+            // = exp(valueApprox)*exp(epsilon)-1
+            // = exp(valueApprox)*(exp(epsilon)-exp(-valueApprox))
+            // = exp(valueApprox)*(1+epsilon+epsilon^2/2!+...-exp(-valueApprox))
+            // = exp(valueApprox)*((1-exp(-valueApprox))+epsilon+epsilon^2/2!+...)
+            // exp(valueApprox) and exp(-valueApprox) being stored in tables.
+
+            if (Math.abs(value) < EXP_LO_DISTANCE_TO_ZERO) {
+                // Taking int part instead of rounding, which takes too long.
+                int i = (int)(value*EXP_LO_INDEXING);
+                double delta = value-i*(1.0/EXP_LO_INDEXING);
+                return MyTExp.expLoPosTab[i+EXP_LO_TAB_MID_INDEX]*(MyTExp.expLoNegTab[i+EXP_LO_TAB_MID_INDEX]+delta*(1+delta*(1.0/2+delta*(1.0/6+delta*(1.0/24+delta*(1.0/120))))));
+            } else {
+                return exp(value)-1;
+            }
         }
 
         /**

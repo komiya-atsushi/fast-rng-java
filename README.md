@@ -99,3 +99,9 @@ https://github.com/jeffhain/jafama
 - Marsaglia, George, and Wai Wan Tsang.
   *A simple method for generating gamma variables.*
   ACM Transactions on Mathematical Software (TOMS) 26.3 (2000): 363-372.
+- Best, D. J.
+  *A note on gamma variate generators with shape parameter less than unity.*
+  Computing 30.2 (1983): 185-188.
+- Wilson, Edwin B., and Margaret M. Hilferty.
+  *The distribution of chi-square.*
+  Proceedings of the National Academy of Sciences 17.12 (1931): 684-688.
