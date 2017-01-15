@@ -18,7 +18,7 @@
   <dependency>
     <groupId>biz.k11i</groupId>
     <artifactId>fast-rng</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4</version>
   </dependency>
 </dependencies>
 ```
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.3'
+    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.4'
 }
 ```
 

@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.1.4
+
+- Improve speed performance of `GammaRNG`
+
 ## 0.1.3
 
 - Support exponential random number generator
