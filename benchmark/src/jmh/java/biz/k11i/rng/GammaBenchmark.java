@@ -1,6 +1,7 @@
 package biz.k11i.rng;
 
 import biz.k11i.rng.util.MtRandom;
+import biz.k11i.rng.util.ParameterPool;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -46,38 +47,16 @@ public class GammaBenchmark {
         }
     }
 
-    public static class ParameterPool {
-        private double[] parameters;
-        private int index;
-
-        ParameterPool(int seed, int count) {
-            parameters = new double[count];
-            MtRandom r = new MtRandom(seed);
-
-            for (int i = 0; i < count; i++) {
-                parameters[i] = Math.nextUp(ExponentialRNG.FAST_RNG.generate(r, 10.0));
-            }
-        }
-
-        double next() {
-            if (index >= parameters.length) {
-                index = 0;
-            }
-
-            return parameters[index++];
-        }
-    }
-
     @State(Scope.Benchmark)
     public static class ArbitraryParameters {
         private double scale = 1.0;
         private Random random = new MtRandom();
         private MersenneTwister mersenneTwister = new MersenneTwister();
-        private ParameterPool parameters = new ParameterPool(12345, 10000);
+        private ParameterPool parameters = new ParameterPool(12345, 10000, 10.0);
 
         @Benchmark
         public double commonsMath3() {
-            return new GammaDistribution(mersenneTwister, parameters.next(), scale).sample();
+            return new GammaDistribution(mersenneTwister, parameters.next(), scale, GammaDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY).sample();
         }
 
         @Benchmark
