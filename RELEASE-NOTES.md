@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.1.5
+
+- Support beta random number generator
+
 ## 0.1.4
 
 - Improve speed performance of `GammaRNG`

@@ -18,7 +18,7 @@
   <dependency>
     <groupId>biz.k11i</groupId>
     <artifactId>fast-rng</artifactId>
-    <version>0.1.4</version>
+    <version>0.1.5</version>
   </dependency>
 </dependencies>
 ```
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.4'
+    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.5'
 }
 ```
 
@@ -64,6 +64,7 @@ public class FastRngDemo {
 - [Gaussian distribution (Normal distribution)](https://en.wikipedia.org/wiki/Normal_distribution)
 - [Exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution)
 - [Gamma distribution](https://en.wikipedia.org/wiki/Gamma_distribution)
+- [Beta distribution](https://en.wikipedia.org/wiki/Beta_distribution)
 
 
 # License
@@ -105,3 +106,9 @@ https://github.com/jeffhain/jafama
 - Wilson, Edwin B., and Margaret M. Hilferty.
   *The distribution of chi-square.*
   Proceedings of the National Academy of Sciences 17.12 (1931): 684-688.
+- Jöhnk, M. D.
+  *Erzeugung von betaverteilten und gammaverteilten Zufallszahlen.*
+  Metrika 8.1 (1964): 5-15.
+- Sakasegawa, H.
+  *Stratified rejection and squeeze method for generating beta random numbers.*
+  Annals of the Institute of Statistical Mathematics 35.1 (1983): 291-302.
