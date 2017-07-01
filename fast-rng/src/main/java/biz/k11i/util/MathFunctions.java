@@ -24,7 +24,7 @@ package biz.k11i.util;
  */
 public final class MathFunctions {
     public static final double log(double value) {
-        return CommonsMath.log(value);
+        return JafamaMath.log(value);
     }
 
     public static final double log1p(double value) {
