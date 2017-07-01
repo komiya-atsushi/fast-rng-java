@@ -120,7 +120,11 @@ public class TwoLevelTester {
 
                 } else {
                     for (int i = startInclusive; i < endExclusive; i++) {
-                        result[i] = distribution.cumulativeProbability(rng.generate(randomSupplier.random()));
+                        double r = rng.generate(randomSupplier.random());
+                        if (Double.isNaN(r)) {
+                            throw new RuntimeException("NaN");
+                        }
+                        result[i] = distribution.cumulativeProbability(r);
                     }
 
                     Arrays.sort(result, startInclusive, endExclusive);
