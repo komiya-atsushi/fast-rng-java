@@ -1,18 +1,10 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-}
-
 plugins {
-    id 'maven'
     id 'maven-publish'
-    id 'net.researchgate.release' version '2.4.0'
-    id 'com.jfrog.bintray' version '1.7'
+    id 'net.researchgate.release' version '2.8.0'
+    id 'com.jfrog.bintray' version '1.8.4'
 }
 
 repositories {
-    jcenter()
     maven {
         url 'http://simulation.tudelft.nl/maven/'
     }
@@ -32,12 +24,12 @@ javadoc {
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -49,7 +41,7 @@ artifacts {
 
 publishing {
     publications {
-        maven(MavenPublication) {
+        mavenJava(MavenPublication) {
             from components.java
             artifact sourcesJar
             artifact javadocJar
