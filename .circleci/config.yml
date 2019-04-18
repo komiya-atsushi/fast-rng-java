@@ -1,0 +1,38 @@
+version: 2.1
+
+executors:
+  builder:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory:
+      /tmp/workspace
+
+jobs:
+  test:
+    executor: builder
+    steps:
+      - checkout
+      - restore_cache:
+          key: gradle-cache
+      - run:
+          name: Run tests
+          command: ./gradlew fast-rng:test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - store_artifacts:
+          path: ~/test-results/junit
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: gradle-cache
+
+workflows:
+  test:
+    jobs:
+      - test
