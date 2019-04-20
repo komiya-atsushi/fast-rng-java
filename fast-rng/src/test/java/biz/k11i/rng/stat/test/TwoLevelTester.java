@@ -2,6 +2,7 @@ package biz.k11i.rng.stat.test;
 
 import biz.k11i.rng.util.ParallelSorts;
 import biz.k11i.rng.util.RandomSupplier;
+import org.apache.commons.math3.distribution.IntegerDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
 
 import java.util.Arrays;
@@ -27,25 +28,67 @@ public class TwoLevelTester {
 
     private final int n;
     private final int k;
-    private final RandomSupplier randomSupplier = new RandomSupplier() {
-        @Override
-        public Random random() {
-            return ThreadLocalRandom.current();
-        }
-    };
+    private final RandomSupplier randomSupplier;
 
     public TwoLevelTester(int n, int k) {
+        this(n, k, ThreadLocalRandom::current);
+    }
+
+    public TwoLevelTester(int n, int k, RandomSupplier randomSupplier) {
         this.n = n;
         this.k = k;
+        this.randomSupplier = randomSupplier;
     }
 
     public interface RealRng {
         double generate(Random random);
     }
 
+    public interface IntRng {
+        int generate(Random random);
+    }
+
+    public interface RngDistributionPair {
+        double cumulativeProbabilityFromRandomValue(Random random);
+    }
+
+    public static class RealRngDistributionPair implements RngDistributionPair {
+        private final RealRng rng;
+        private final RealDistribution distribution;
+
+        RealRngDistributionPair(RealRng rng, RealDistribution distribution) {
+            this.rng = rng;
+            this.distribution = distribution;
+        }
+
+        @Override
+        public double cumulativeProbabilityFromRandomValue(Random random) {
+            double r = rng.generate(random);
+            if (Double.isNaN(r)) {
+                throw new RuntimeException("RNG generates NaN");
+            }
+            return distribution.cumulativeProbability(r);
+        }
+    }
+
+    public static class IntRngDistributionPair implements RngDistributionPair {
+        private final IntRng rng;
+        private final IntegerDistribution distribution;
+
+        IntRngDistributionPair(IntRng rng, IntegerDistribution distribution) {
+            this.rng = rng;
+            this.distribution = distribution;
+        }
+
+        @Override
+        public double cumulativeProbabilityFromRandomValue(Random random) {
+            int r = rng.generate(random);
+            return distribution.cumulativeProbability(r);
+        }
+    }
+
     private Map<SequenceTransformer, Double> runTwoLevelTest(
-            final RealRng rng,
-            final RealDistribution distribution,
+            final RngDistributionPair pair,
             final TestStatistic testStatistic,
             SequenceTransformer... transformers) throws ExecutionException, InterruptedException {
 
@@ -63,7 +106,7 @@ public class TwoLevelTester {
         ForkJoinPool pool = new ForkJoinPool();
 
         for (int ki = 0; ki < k; ki++) {
-            pool.invoke(generateRandomValuesRecursive(rng, distribution, 0, n, firstLevelValues, firstLevelWork));
+            pool.invoke(generateRandomValuesRecursive(pair, 0, n, firstLevelValues, firstLevelWork));
 
             Map<SequenceTransformer, ForkJoinTask<Double>> tasks = new EnumMap<>(SequenceTransformer.class);
             for (SequenceTransformer transformer : transformers) {
@@ -99,8 +142,7 @@ public class TwoLevelTester {
     }
 
     private ForkJoinTask<Void> generateRandomValuesRecursive(
-            final RealRng rng,
-            final RealDistribution distribution,
+            final RngDistributionPair pair,
             final int startInclusive,
             final int endExclusive,
             final double[] result,
@@ -113,18 +155,15 @@ public class TwoLevelTester {
                     int mid = startInclusive + (endExclusive - startInclusive) / 2;
 
                     invokeAll(
-                            generateRandomValuesRecursive(rng, distribution, startInclusive, mid, work, result /* swap work & result*/),
-                            generateRandomValuesRecursive(rng, distribution, mid, endExclusive, work, result));
+                            generateRandomValuesRecursive(pair, startInclusive, mid, work, result /* swap work & result*/),
+                            generateRandomValuesRecursive(pair, mid, endExclusive, work, result));
 
                     ParallelSorts.merge(work, result, startInclusive, mid, endExclusive);
 
                 } else {
+                    Random random = randomSupplier.random();
                     for (int i = startInclusive; i < endExclusive; i++) {
-                        double r = rng.generate(randomSupplier.random());
-                        if (Double.isNaN(r)) {
-                            throw new RuntimeException("NaN");
-                        }
-                        result[i] = distribution.cumulativeProbability(r);
+                        result[i] = pair.cumulativeProbabilityFromRandomValue(random);
                     }
 
                     Arrays.sort(result, startInclusive, endExclusive);
@@ -156,13 +195,24 @@ public class TwoLevelTester {
 
         try {
             for (TestStatistic testStatistic : Collections.singleton(TestStatistic.ANDERSON_DARLING)) {
-                Map<SequenceTransformer, Double> result = runTwoLevelTest(rng, distribution, testStatistic, transformers);
+                Map<SequenceTransformer, Double> result = runTwoLevelTest(new RealRngDistributionPair(rng, distribution), testStatistic, transformers);
 
                 for (SequenceTransformer transformer : transformers) {
                     assertThat(result, hasEntry(is(transformer), greaterThanOrEqualTo(0.001)));
                 }
 
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void test(IntRng rng, IntegerDistribution distribution) {
+        try {
+            Map<SequenceTransformer, Double> result = runTwoLevelTest(new IntRngDistributionPair(rng, distribution), TestStatistic.ANDERSON_DARLING, SequenceTransformer.NONE);
+
+            assertThat(result, hasEntry(is(SequenceTransformer.NONE), greaterThanOrEqualTo(0.001)));
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
