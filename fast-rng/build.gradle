@@ -52,7 +52,7 @@ publishing {
 bintray {
     user = project.hasProperty('bintrayUser') ? bintrayUser : ''
     key = project.hasProperty('bintrayKey') ? bintrayKey : ''
-    publications = ['maven']
+    publications = ['mavenJava']
 
     pkg {
         repo = 'maven'
@@ -71,4 +71,9 @@ bintray {
     }
 }
 
-createReleaseTag.dependsOn bintrayUpload
+release {
+    preTagCommitMessage = '[skip ci] [Gradle Release Plugin] - pre tag commit: '
+    newVersionCommitMessage = '[skip ci] [Gradle Release Plugin] - new version commit: '
+}
+
+afterReleaseBuild.dependsOn bintrayUpload
