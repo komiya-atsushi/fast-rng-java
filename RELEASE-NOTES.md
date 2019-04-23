@@ -1,5 +1,11 @@
 # Release notes
 
+## 0.2.0
+
+- Fast-rng now requires Java 8 or later.
+- Introduces a new class [`UniformRNGUtils`](fast-rng/src/main/java/biz/k11i/rng/UniformRNGUtils.java).
+    - The method `UniformRNGUtils#nextInt(java.util.Random random, int bound)` is faster than [`Random#nextInt(int bound)`](https://docs.oracle.com/javase/8/docs/api/java/util/Random.html#nextInt-int-).
+
 ## 0.1.5
 
 - Support beta random number generator

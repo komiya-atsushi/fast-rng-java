@@ -18,7 +18,7 @@
   <dependency>
     <groupId>biz.k11i</groupId>
     <artifactId>fast-rng</artifactId>
-    <version>0.1.5</version>
+    <version>0.2.0</version>
   </dependency>
 </dependencies>
 ```
@@ -33,7 +33,7 @@ repositories {
 }
 
 dependencies {
-    compile group: 'biz.k11i', name: 'fast-rng', version: '0.1.5'
+    compile group: 'biz.k11i', name: 'fast-rng', version: '0.2.0'
 }
 ```
 
@@ -112,3 +112,6 @@ https://github.com/jeffhain/jafama
 - Sakasegawa, H.
   *Stratified rejection and squeeze method for generating beta random numbers.*
   Annals of the Institute of Statistical Mathematics 35.1 (1983): 291-302.
+- Lemire, Daniel.
+  *Fast random integer generation in an interval.*
+  ACM Transactions on Modeling and Computer Simulation (TOMACS) 29.1 (2019): 3.
