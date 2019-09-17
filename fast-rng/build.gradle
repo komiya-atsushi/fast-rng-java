@@ -11,12 +11,11 @@ repositories {
 }
 
 dependencies {
-    testImplementation group: 'org.apache.commons', name: 'commons-math3', version: '3.6'
-    testImplementation group: 'ca.umontreal.iro', name: 'ssj', version: '2.5'
-    testImplementation(group: 'junit', name: 'junit', version: '4.12') {
-        exclude group: 'org.hamcrest', module: 'hamcrest-core'
-    }
-    testImplementation group: 'org.hamcrest', name: 'java-hamcrest', version: '2.0.0.0'
+    testImplementation project(':fast-rng-test')
+}
+
+test {
+    useJUnitPlatform()
 }
 
 javadoc {

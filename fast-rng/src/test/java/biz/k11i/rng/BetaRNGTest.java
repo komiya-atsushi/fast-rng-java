@@ -1,123 +1,117 @@
 package biz.k11i.rng;
 
-import biz.k11i.rng.stat.test.TwoLevelTester;
-import org.apache.commons.math3.distribution.BetaDistribution;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.experimental.theories.DataPoint;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.FromDataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import biz.k11i.rng.test.SecondLevelTest;
+import biz.k11i.rng.test.gof.GoodnessOfFitTest;
+import biz.k11i.rng.test.util.distribution.ProbabilityDistributions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import static biz.k11i.rng.BetaRNGTest.BetaDistParam.param;
+import java.util.stream.Stream;
 
-@RunWith(Enclosed.class)
-public class BetaRNGTest {
-    static class BetaDistParam {
-        private final double alpha;
-        private final double beta;
-
-        BetaDistParam(double alpha, double beta) {
-            this.alpha = alpha;
-            this.beta = beta;
-        }
-
-        static BetaDistParam param(double alpha, double beta) {
-            return new BetaDistParam(alpha, beta);
-        }
+class BetaRNGTest {
+    static Stream<Arguments> parameterCase1() {
+        return Stream.of(
+                Arguments.of(0.1, 0.5),
+                Arguments.of(0.1, 0.9),
+                Arguments.of(0.45, 0.46),
+                Arguments.of(0.46, 0.45),
+                Arguments.of(0.5, 0.5),
+                Arguments.of(0.5, 0.9),
+                Arguments.of(0.9, 0.5),
+                Arguments.of(0.99998, 0.99999),
+                Arguments.of(0.99999, 0.99998));
     }
 
-    @DataPoint("N")
-    public static final int N = 1_000_000;
-
-    @DataPoint("K")
-    public static final int K = 20;
-
-    @Theory
-    public void testGoodnessOfFitByTwoLevelTesting(
-            @FromDataPoints("N") final int N,
-            @FromDataPoints("K") final int K,
-            final BetaDistParam parameters,
-            final BetaRNG betaRNG) {
-
-        final double alpha = parameters.alpha;
-        final double beta = parameters.beta;
-
-        System.out.printf("%s: alpha = %.2f, beta = %.2f%n", betaRNG.getClass().getSimpleName(), alpha, beta);
-
-        TwoLevelTester tester = new TwoLevelTester(N, K);
-        tester.test(
-                random -> betaRNG.generate(random, alpha, beta),
-                new BetaDistribution(alpha, beta, 1e-15));
-        System.out.println(betaRNG);
+    @ParameterizedTest
+    @MethodSource("parameterCase1")
+    void testCase1_fast(double alpha, double beta) {
+        test(BetaRNG.FAST_RNG, alpha, beta);
     }
 
-    @RunWith(Theories.class)
-    public static class Case1Test extends BetaRNGTest {
-        @DataPoints
-        public static final BetaDistParam[] PARAMS = {
-                param(0.1, 0.5),
-                param(0.1, 0.9),
-                param(0.45, 0.46),
-                param(0.46, 0.45),
-                param(0.5, 0.5),
-                param(0.5, 0.9),
-                param(0.9, 0.5),
-                param(0.99998, 0.99999),
-                param(0.99999, 0.99998),
-        };
-
-        @DataPoints
-        public static final BetaRNG[] RNGS = {BetaRNG.FAST_RNG, BetaRNG.GENERAL_RNG};
+    @ParameterizedTest
+    @MethodSource("parameterCase1")
+    void testCase1_general(double alpha, double beta) {
+        test(BetaRNG.GENERAL_RNG, alpha, beta);
     }
 
-    @RunWith(Theories.class)
-    public static class Case2Test extends BetaRNGTest {
-        @DataPoints
-        public static final BetaDistParam[] PARAMS = {
-                param(0.099, 10.0),
-                param(0.6, 1.2),
-                param(1.2, 0.6),
-                param(0.7, 5.0),
-                param(0.8, 20.0),
-                param(20.0, 0.8),
-                param(0.9, 80.0)
-        };
-
-        @DataPoints
-        public static final BetaRNG[] RNGS = {BetaRNG.FAST_RNG, BetaRNG.GENERAL_RNG};
+    static Stream<Arguments> parameterCase2() {
+        return Stream.of(
+                Arguments.of(0.099, 10.0),
+                Arguments.of(0.6, 1.2),
+                Arguments.of(1.2, 0.6),
+                Arguments.of(0.7, 5.0),
+                Arguments.of(0.8, 20.0),
+                Arguments.of(20.0, 0.8),
+                Arguments.of(0.9, 80.0));
     }
 
-    @RunWith(Theories.class)
-    public static class Case3Test extends BetaRNGTest {
-        @DataPoints
-        public static final BetaDistParam[] PARAMS = {
-                param(1.5, 1.5),
-                param(1.5, 4.0),
-                param(4.0, 1.5),
-                param(4.0, 100.0),
-                param(100.0, 4.0),
-        };
-
-        @DataPoints
-        public static final BetaRNG[] RNGS = {BetaRNG.FAST_RNG, BetaRNG.GENERAL_RNG};
+    @ParameterizedTest
+    @MethodSource("parameterCase2")
+    void testCase2_fast(double alpha, double beta) {
+        test(BetaRNG.FAST_RNG, alpha, beta);
     }
 
-    @RunWith(Theories.class)
-    public static class SpecialCaseTest extends BetaRNGTest {
-        @DataPoints
-        public static final BetaDistParam[] PARAMS = {
-                param(1.0, 1.01),
-                param(1.0, 0.99),
-                param(1.0, 10.0),
-                param(1.01, 1.0),
-                param(0.99, 1.0),
-                param(10.0, 1.0),
-                param(1.0, 1.0)
-        };
+    @ParameterizedTest
+    @MethodSource("parameterCase2")
+    void testCase2_general(double alpha, double beta) {
+        test(BetaRNG.GENERAL_RNG, alpha, beta);
+    }
 
-        @DataPoints
-        public static final BetaRNG[] RNGS = {BetaRNG.FAST_RNG, BetaRNG.GENERAL_RNG};
+    static Stream<Arguments> parameterCase3() {
+        return Stream.of(
+                Arguments.of(1.5, 1.5),
+                Arguments.of(1.5, 4.0),
+                Arguments.of(4.0, 1.5),
+                Arguments.of(4.0, 100.0),
+                Arguments.of(100.0, 4.0));
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameterCase3")
+    void testCase3_fast(double alpha, double beta) {
+        test(BetaRNG.FAST_RNG, alpha, beta);
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameterCase3")
+    void testCase3_general(double alpha, double beta) {
+        test(BetaRNG.GENERAL_RNG, alpha, beta);
+    }
+
+    static Stream<Arguments> parameterSpecialCase() {
+        return Stream.of(
+                Arguments.of(1.0, 1.01),
+                Arguments.of(1.0, 0.99),
+                Arguments.of(1.0, 10.0),
+                Arguments.of(1.01, 1.0),
+                Arguments.of(0.99, 1.0),
+                Arguments.of(10.0, 1.0),
+                Arguments.of(1.0, 1.0));
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameterSpecialCase")
+    void testSpecialCase_fast(double alpha, double beta) {
+        test(BetaRNG.FAST_RNG, alpha, beta);
+    }
+
+    @ParameterizedTest
+    @MethodSource("parameterSpecialCase")
+    void testSpecialCase_general(double alpha, double beta) {
+        test(BetaRNG.GENERAL_RNG, alpha, beta);
+    }
+
+    private void test(BetaRNG rng, double alpha, double beta) {
+        GoodnessOfFitTest gofTest = GoodnessOfFitTest.continuous()
+                .probabilityDistribution(ProbabilityDistributions.beta(alpha, beta))
+                .randomNumberGenerator(String.format("Beta(%f, %f)", alpha, beta), r -> rng.generate(r, alpha, beta))
+                .numRandomValues(1_000_000)
+                .build();
+
+        SecondLevelTest.builder()
+                .numIterations(20)
+                .build()
+                .testAndVerify(gofTest);
     }
 }

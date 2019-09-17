@@ -1,34 +1,31 @@
 package biz.k11i.rng;
 
-import biz.k11i.rng.stat.test.TwoLevelTester;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.junit.Test;
+import biz.k11i.rng.test.gof.GoodnessOfFitTest;
+import biz.k11i.rng.test.SecondLevelTest;
+import biz.k11i.rng.test.util.distribution.ProbabilityDistributions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Random;
-
-public class GaussianRNGTest {
-    private static final int N = 2_000_000;
-    private static final int K = 20;
-    private static final NormalDistribution NORMAL_DISTRIBUTION = new NormalDistribution();
-
-    private void testGoodnessOfFitByTwoLevelTesting(final GaussianRNG gaussianRNG) {
-        TwoLevelTester tester = new TwoLevelTester(N, K);
-        TwoLevelTester.RealRng rng = new TwoLevelTester.RealRng() {
-            @Override
-            public double generate(Random random) {
-                return gaussianRNG.generate(random);
-            }
-        };
-        tester.test(rng, NORMAL_DISTRIBUTION);
+class GaussianRNGTest {
+    @Test
+    void testFast() {
+        test(GaussianRNG.FAST_RNG);
     }
 
     @Test
-    public void testGoodnessOfFit_fast() {
-        testGoodnessOfFitByTwoLevelTesting(GaussianRNG.FAST_RNG);
+    void testGeneral() {
+        test(GaussianRNG.GENERAL_RNG);
     }
 
-    @Test
-    public void testGoodnessOfFit_general() {
-        testGoodnessOfFitByTwoLevelTesting(GaussianRNG.GENERAL_RNG);
+    private void test(GaussianRNG rng) {
+        GoodnessOfFitTest gofTest = GoodnessOfFitTest.continuous()
+                .probabilityDistribution(ProbabilityDistributions.gaussian(0.0, 1.0))
+                .randomNumberGenerator("Gaussian", rng::generate)
+                .numRandomValues(2_000_000)
+                .build();
+
+        SecondLevelTest.builder()
+                .numIterations(20)
+                .build()
+                .testAndVerify(gofTest);
     }
 }

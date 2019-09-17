@@ -1,41 +1,40 @@
 package biz.k11i.rng;
 
-import biz.k11i.rng.stat.test.TwoLevelTester;
+import biz.k11i.rng.test.SecondLevelTest;
+import biz.k11i.rng.test.gof.GoodnessOfFitTest;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.junit.experimental.theories.DataPoints;
-import org.junit.experimental.theories.Theories;
-import org.junit.experimental.theories.Theory;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Random;
+import java.util.stream.Stream;
 
-@RunWith(Theories.class)
-public class ExponentialRNGTest {
-    private static final int N = 2_000_000;
-    private static final int K = 20;
-
-    private void testGoodnessOfFitByTwoLevelTesting(final ExponentialRNG exponentialRNG, final double theta) {
-        TwoLevelTester tester = new TwoLevelTester(N, K);
-        TwoLevelTester.RealRng rng = new TwoLevelTester.RealRng() {
-            @Override
-            public double generate(Random random) {
-                return exponentialRNG.generate(random, theta);
-            }
-        };
-        ExponentialDistribution distribution = new ExponentialDistribution(theta);
-        tester.test(rng, distribution);
+class ExponentialRNGTest {
+    static Stream<Double> parameter() {
+        return Stream.of(0.01, 1.0, 100.0);
     }
 
-    @DataPoints
-    public static final double[] theta = {0.01, 1.0, 100.0};
-
-    @Theory
-    public void testGoodnessOfFit_fast(double theta) {
-        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.FAST_RNG, theta);
+    @ParameterizedTest
+    @MethodSource("parameter")
+    void testFast(double theta) {
+        test(ExponentialRNG.FAST_RNG, theta);
     }
 
-    @Theory
-    public void testGoodnessOfFit_general(double theta) {
-        testGoodnessOfFitByTwoLevelTesting(ExponentialRNG.GENERAL_RNG, theta);
+    @ParameterizedTest
+    @MethodSource("parameter")
+    void testGeneral(double theta) {
+        test(ExponentialRNG.GENERAL_RNG, theta);
+    }
+
+    private void test(ExponentialRNG rng, double theta) {
+        GoodnessOfFitTest gofTest = GoodnessOfFitTest.continuous()
+                .probabilityDistribution(new ExponentialDistribution(theta))
+                .randomNumberGenerator(String.format("Exp(%f)", theta), r -> rng.generate(r, theta))
+                .numRandomValues(2_000_000)
+                .build();
+
+        SecondLevelTest.builder()
+                .numIterations(20)
+                .build()
+                .testAndVerify(gofTest);
     }
 }
